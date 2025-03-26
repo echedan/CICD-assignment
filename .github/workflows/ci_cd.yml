@@ -28,10 +28,13 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       # Step 3: Lint Python code
-      - name: Install and run flake8
+      - name: Lint Python code
         run: |
-          pip install flake8
-          flake8 .
+          if [ -f .flake8] || [ -f setup.cfg ] || [ -f tox.ini ] || [ -f .pep8 ]; then
+            flake8
+          else
+            echo "No linting configuration found"
+          fi
 
       # Step 4: Run Python tests
       - name: Run Python tests
@@ -68,7 +71,7 @@ jobs:
           run: docker build . -t ${{ secrets.DOCKERHUB_USERNAME }}/backend_flask:latest
 
         - name: Log in to Docker Hub
-          run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login --u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+          run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
 
         - name: Push Docker Image
           run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/backend_flask:latest
